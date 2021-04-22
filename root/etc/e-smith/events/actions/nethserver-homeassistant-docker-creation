@@ -85,13 +85,6 @@ docker run -d --name homeassistant \
 	homeassistant/homeassistant:stable
 
 elif [[ ${homeassistantNetwork} == 'aqua' ]];then
-#
-# this is an hidden egg 
-# do a reverse proxy homeassistant.local to http://172.28.45.10
-# create a host self in nethserver 
-#    pi.hole=self
-#        Description=vhost Reverse
-# set the dns server of NS to pihole (172.28.45.10)
 docker run -d --name homeassistant \
     -v "/var/lib/homeassistant/config/:/config/" \
     -e TZ="$timezone" \
