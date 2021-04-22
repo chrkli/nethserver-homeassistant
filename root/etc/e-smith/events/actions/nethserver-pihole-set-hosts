@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+
+
+homeassistantNetwork=$(/sbin/e-smith/config getprop homeassistant haNetwork)
+homeassistantAquaIP=$(/sbin/e-smith/config getprop homeassistant haAquaIP)
+homeassistantMacVlanIP=$(/sbin/e-smith/config getprop homeassistant haMacVlanIP)
+
+if [[ ${homeassistantNetwork} == '' ]];then
+    exit 0
+fi
+
+/usr/sbin/e-smith/db hosts delete pi.hole
+
+if [[ ${homeassistantNetwork} == 'aqua' ]];then
+    /usr/sbin/e-smith/db hosts set homeassistant.local self Description 'Homeassistant host'
+elif [[ ${homeassistantNetwork} == 'macvlan' ]];then
+    if [[ ${homeassistantMacVlanIP} == '' ]];then
+        exit 0
+    fi
+    /usr/sbin/e-smith/db hosts set homeassistant.local remote Description 'Homeassistant host' IpAddress ${homeassistantMacVlanIP}
+fi
+
+/usr/sbin/e-smith/expand-template /etc/hosts
