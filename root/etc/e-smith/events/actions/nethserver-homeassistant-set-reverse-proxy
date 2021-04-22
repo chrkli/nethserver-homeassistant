@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+
+
+homeassistantNetwork=$(/sbin/e-smith/config getprop homeassistant haNetwork)
+homeassistantAquaIP=$(/sbin/e-smith/config getprop homeassistant haAquaIP)
+
+if [[ ${homeassistantNetwork} == '' ]];then
+    exit 0
+fi
+
+/usr/sbin/e-smith/db proxypass delete homeassistant.local
+
+if [[ ${homeassistantNetwork} == 'aqua' ]];then
+    /usr/sbin/e-smith/db proxypass set homeassistant.local VhostReverse Description 'Homeassistant host' CertVerification 'yes' \
+        HTTP no HTTPS yes PreserveHost yes SslCertificate '' Target http://${homeassistantAquaIP} \
+        ValidFrom '' WebSockets enabled WebSocketsPath ''
+fi
+
+/usr/sbin/e-smith/signal-event nethserver-httpd-save
