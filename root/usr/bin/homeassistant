@@ -1,0 +1,64 @@
+#!/usr/bin/bash
+
+if [[ $1 == 'ip' ]]; then
+    echo "# homeassistant IP"
+    homeassistantNetwork=$(/sbin/e-smith/config getprop homeassistant haNetwork)
+    if [[ ${homeassistantNetwork} == 'macvlan' ]]; then
+        homeassistantMacVlanIP=$(/sbin/e-smith/config getprop homeassistant haMacVlanIP)
+        echo $homeassistantMacVlanIP
+    else
+        docker inspect -f "{{.NetworkSettings.Networks.aeria.IPAddress}}" homeassistant
+    fi
+elif [[ $1 == 'status' ]]; then
+    echo "# homeassistant status"
+    docker inspect -f "{{.State.Health.Status}}" homeassistant
+elif [[ $1 == 'stop' ]]; then
+    echo "# homeassistant stop"
+    docker stop homeassistant
+elif [[ $1 == 'log' ]]; then
+    echo "# homeassistant logs"
+    docker logs homeassistant
+elif [[ $1 == 'ps' ]]; then
+    echo "# homeassistant container ps"
+    docker ps | grep homeassistant
+elif [[ $1 == 'start' ]]; then
+    echo "# homeassistant start"
+    docker start homeassistant
+elif [[ $1 == 'restart' ]]; then
+    echo "# homeassistant restart"
+    docker stop homeassistant > /dev/null 2>&1
+    docker start homeassistant
+elif [[ $1 == 'destroy' ]]; then
+    echo "# homeassistant destroy"
+    docker rm -f homeassistant
+elif [[ $1 == 'build' ]]; then
+    echo "# homeassistant destroy, then build"
+    docker rm -f homeassistant > /dev/null 2>&1
+    /etc/e-smith/events/actions/nethserver-homeassistant-docker-creation
+elif [[ $1 == 'upgrade' ]]; then
+    echo "# upgrade docker image, destroy, then build"
+    docker pull homeassistant/homeassistant:stable
+    docker rm -f homeassistant > /dev/null 2>&1
+    /etc/e-smith/events/actions/nethserver-homeassistant-docker-creation
+elif [[ $1 == 'env' ]]; then
+    echo "# homeassistant Environment variable"
+    array=$(docker inspect -f "{{.Config.Env}}" homeassistant)
+    echo "${array[@]}" | tr ' ' '\n'
+elif [[ $1 == 'bash' ]]; then
+    docker exec -ti homeassistant /bin/bash
+else
+    echo "The commands are :
+    homeassistant ip : find the IP of homeassistant given by your dhcp server
+    homeassistant status : retrieve the status of homeassistant container
+    homeassistant env : retrieve all the environment vars of the container
+    homeassistant bash : start a shell inside the container
+    homeassistant restart: Restart the homeassistant container
+    homeassistant start: Start the homeassistant container
+    homeassistant stop: Stop the homeassistant container
+    homeassistant destroy: Delete the homeassistant container
+    homeassistant build: Delete then create the homeassistant container
+    homeassistant upgrade: Upgrade docker image, delete then create the homeassistant container
+    homeassistant ps: Container information
+    homeassistant log: Display the error log of the container
+"
+fi

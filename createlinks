@@ -1,0 +1,12 @@
+#!/usr/bin/perl -w
+
+use esmith::Build::CreateLinks qw(:all);
+
+my $event = 'nethserver-homeassistant-update';
+event_actions ( $event, 'initialize-default-databases' => '00');
+
+event_actions($event, qw(
+             nethserver-homeassistant-docker-creation 10
+));
+
+templates2events("/var/lib/homeassistant/php-conf.d/99-memory.ini", $event);
